@@ -30,10 +30,46 @@ import { TOOLS_DATA } from './data/toolsData';
 import { ToolDefinition, ToastMessage } from './types';
 import { getSettings } from './utils/storage';
 
+function getInitialRoute(): string {
+  if (typeof window === 'undefined') return '/';
+
+  // 1. Check Hash routing first (ideal for GitHub Pages subdirectories)
+  const hash = window.location.hash;
+  if (hash) {
+    const cleanHash = hash.replace(/^#\/?/, '/');
+    if (cleanHash.startsWith('/')) {
+      return cleanHash;
+    }
+  }
+
+  // 2. Check Pathname
+  const pathname = window.location.pathname || '/';
+  if (pathname === '/' || pathname === '' || pathname.endsWith('/index.html')) {
+    return '/';
+  }
+
+  // Match tool routes against the end of pathname (e.g. /my-repo/pdf-to-word)
+  for (const tool of TOOLS_DATA) {
+    if (pathname.endsWith(tool.route) || pathname.endsWith(`/${tool.id}`)) {
+      return tool.route;
+    }
+  }
+
+  // Match static pages
+  const staticPages = ['/history', '/settings', '/help', '/privacy', '/terms', '/contact'];
+  for (const page of staticPages) {
+    if (pathname.endsWith(page)) {
+      return page;
+    }
+  }
+
+  return '/';
+}
+
 export default function App() {
   // Navigation Path
   const [currentPath, setCurrentPath] = useState<string>(() => {
-    return window.location.pathname || '/';
+    return getInitialRoute();
   });
 
   // Dark Mode State
@@ -56,31 +92,42 @@ export default function App() {
     }
   }, [darkMode]);
 
-  // Handle browser popstate (back/forward)
+  // Handle browser popstate & hashchange (back/forward and hash navigation)
   useEffect(() => {
-    const handlePopState = () => {
-      setCurrentPath(window.location.pathname || '/');
+    const handleLocationChange = () => {
+      setCurrentPath(getInitialRoute());
     };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener('popstate', handleLocationChange);
+    window.addEventListener('hashchange', handleLocationChange);
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      window.removeEventListener('hashchange', handleLocationChange);
+    };
   }, []);
 
   // Navigation Handler
   const navigate = (path: string) => {
-    if (path.startsWith('/#')) {
-      // Hash scroll
+    if (path.startsWith('/#') || path.startsWith('#')) {
+      const sectionId = path.replace(/^\/?#/, '');
       setCurrentPath('/');
-      window.history.pushState({}, '', '/');
-      const hash = path.replace('/#', '');
+      window.location.hash = sectionId;
       setTimeout(() => {
-        const el = document.getElementById(hash);
+        const el = document.getElementById(sectionId);
         if (el) el.scrollIntoView({ behavior: 'smooth' });
       }, 100);
       return;
     }
 
     setCurrentPath(path);
-    window.history.pushState({}, '', path);
+    const targetHash = path === '/' ? '' : (path.startsWith('/') ? path.substring(1) : path);
+    if (targetHash) {
+      window.location.hash = targetHash;
+    } else {
+      // Clear hash if navigating back to home
+      if (window.location.hash) {
+        window.history.pushState(null, '', window.location.pathname);
+      }
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
