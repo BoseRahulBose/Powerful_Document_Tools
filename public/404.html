@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>DocuFlow — Online PDF & Word Tools</title>
+    <script>
+      // Single Page Apps for GitHub Pages
+      // MIT License
+      // https://github.com/rafgraph/spa-github-pages
+      // This script takes the current url and converts the path and query
+      // into a hash fragment so that the Single Page App can load the correct route.
+      var pathSegmentsToKeep = 1;
+
+      var l = window.location;
+      var repoSegments = l.pathname.split('/').filter(Boolean);
+      var currentPath = l.pathname;
+
+      // Extract the route part
+      var route = repoSegments.length > 0 ? repoSegments[repoSegments.length - 1] : '';
+      
+      // Redirect to index.html with the route as hash
+      var targetUrl = l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+        l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/#' +
+        (route ? '/' + route : '') +
+        (l.search ? '&' + l.search.slice(1) : '');
+
+      window.location.replace(targetUrl);
+    </script>
+  </head>
+  <body>
+    <p>Redirecting to application...</p>
+  </body>
+</html>
