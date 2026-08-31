@@ -1,0 +1,6 @@
+{
+  "name": "DocuFlow",
+  "description": "All Your Document Tools. One Simple Workspace. Convert, compress, merge, split, rotate, and manage PDF and Word documents directly in your browser.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
